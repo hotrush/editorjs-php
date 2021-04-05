@@ -21,15 +21,15 @@ class TypeTest extends TestCase
     /**
      * Setup configuration
      */
-    public function setUp()
+    public function setUp(): void
     {
-        $this->configuration = file_get_contents(TypeTest::CONFIGURATION_FILE);
+        $this->configuration = json_decode(file_get_contents(TypeTest::CONFIGURATION_FILE), true);
     }
 
     public function testBooleanFailed()
     {
         $callable_not_bool = function () {
-            new EditorJS('{"blocks":[{"type":"test","data":{"bool_test":"not boolean"}}]}', $this->configuration);
+            new EditorJS(json_decode('{"blocks":[{"type":"test","data":{"bool_test":"not boolean"}}]}', true), $this->configuration);
         };
 
         $this->assertException($callable_not_bool, EditorJSException::class, null, 'Option \'bool_test\' with value `not boolean` must be boolean');
@@ -37,18 +37,20 @@ class TypeTest extends TestCase
 
     public function testBooleanValid()
     {
-        new EditorJS('{"blocks":[{"type":"test","data":{"bool_test":true}}]}', $this->configuration);
+        new EditorJS(json_decode('{"blocks":[{"type":"test","data":{"bool_test":true}}]}', true), $this->configuration);
+        $this->assertTrue(true);
     }
 
     public function testIntegerValid()
     {
-        new EditorJS('{"blocks":[{"type":"test","data":{"int_test": 5}}]}', $this->configuration);
+        new EditorJS(json_decode('{"blocks":[{"type":"test","data":{"int_test": 5}}]}', true), $this->configuration);
+        $this->assertTrue(true);
     }
 
     public function testIntegerFailed()
     {
         $callable = function () {
-            new EditorJS('{"blocks":[{"type":"test","data":{"int_test": "not integer"}}]}', $this->configuration);
+            new EditorJS(json_decode('{"blocks":[{"type":"test","data":{"int_test": "not integer"}}]}', true), $this->configuration);
         };
 
         $this->assertException($callable, EditorJSException::class, null, 'Option \'int_test\' with value `not integer` must be integer');
@@ -56,13 +58,14 @@ class TypeTest extends TestCase
 
     public function testStringValid()
     {
-        new EditorJS('{"blocks":[{"type":"test","data":{"string_test": "string"}}]}', $this->configuration);
+        new EditorJS(json_decode('{"blocks":[{"type":"test","data":{"string_test": "string"}}]}', true), $this->configuration);
+        $this->assertTrue(true);
     }
 
     public function testStringFailed()
     {
         $callable = function () {
-            new EditorJS('{"blocks":[{"type":"test","data":{"string_test": 17}}]}', $this->configuration);
+            new EditorJS(json_decode('{"blocks":[{"type":"test","data":{"string_test": 17}}]}', true), $this->configuration);
         };
 
         $this->assertException($callable, EditorJSException::class, null, 'Option \'string_test\' with value `17` must be string');
@@ -70,13 +73,14 @@ class TypeTest extends TestCase
 
     public function testAllowedNullNotRequired()
     {
-        new EditorJS('{"blocks":[{"type":"test","data":{"int_test": null}}]}', $this->configuration);
+        new EditorJS(json_decode('{"blocks":[{"type":"test","data":{"int_test": null}}]}', true), $this->configuration);
+        $this->assertTrue(true);
     }
 
     public function testDisallowedNullNotRequired()
     {
         $callable = function () {
-            new EditorJS('{"blocks":[{"type":"test","data":{"string_test": null}}]}', $this->configuration);
+            new EditorJS(json_decode('{"blocks":[{"type":"test","data":{"string_test": null}}]}', true), $this->configuration);
         };
 
         $this->assertException($callable, EditorJSException::class, null, 'string_test\' with value `` must be string');
@@ -84,10 +88,10 @@ class TypeTest extends TestCase
 
     public function testNullRequired()
     {
-        new EditorJS('{"blocks":[{"type":"test","data":{"string_test": "qwe"}}]}', file_get_contents(TypeTest::CONFIGURATION_FILE_REQUIRED));
+        new EditorJS(json_decode('{"blocks":[{"type":"test","data":{"string_test": "qwe"}}]}', true), json_decode(file_get_contents(TypeTest::CONFIGURATION_FILE_REQUIRED), true));
 
         $callable = function () {
-            new EditorJS('{"blocks":[{"type":"test","data":{"string_test": null}}]}', file_get_contents(TypeTest::CONFIGURATION_FILE_REQUIRED));
+            new EditorJS(json_decode('{"blocks":[{"type":"test","data":{"string_test": null}}]}', true), json_decode(file_get_contents(TypeTest::CONFIGURATION_FILE_REQUIRED), true));
         };
         $this->assertException($callable, EditorJSException::class, null, 'Not found required param `string_test`');
     }

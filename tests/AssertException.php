@@ -1,6 +1,6 @@
 <?php
 
-abstract class TestCase extends \PHPUnit_Framework_TestCase
+abstract class TestCase extends \PHPUnit\Framework\TestCase
 {
     protected function assertException(callable $callback, $expectedException = 'Exception', $expectedCode = null, $expectedMessage = null)
     {
@@ -33,7 +33,7 @@ abstract class TestCase extends \PHPUnit_Framework_TestCase
             }
 
             if ($expectedMessage !== null) {
-                $this->assertContains($expectedMessage, $message, sprintf('Failed asserting the message of thrown %s.', $class));
+                $this->assertStringContainsString($expectedMessage, $message, sprintf('Failed asserting the message of thrown %s.', $class));
             }
 
             return;

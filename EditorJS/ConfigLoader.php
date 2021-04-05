@@ -9,22 +9,21 @@ namespace EditorJS;
  */
 class ConfigLoader
 {
-    public $tools = [];
+    public array $tools = [];
 
     /**
      * ConfigLoader constructor
      *
-     * @param string $configuration – configuration data
+     * @param array $config – configuration data
      *
      * @throws EditorJSException
      */
-    public function __construct($configuration)
+    public function __construct(array $config)
     {
-        if (empty($configuration)) {
+        if (empty($config)) {
             throw new EditorJSException("Configuration data is empty");
         }
 
-        $config = json_decode($configuration, true);
         $this->loadTools($config);
     }
 
@@ -35,7 +34,7 @@ class ConfigLoader
      *
      * @throws EditorJSException
      */
-    private function loadTools($config)
+    private function loadTools(array $config): void
     {
         if (!isset($config['tools'])) {
             throw new EditorJSException('Tools not found in configuration');
@@ -57,7 +56,7 @@ class ConfigLoader
      *
      * @return array
      */
-    private function loadTool($data)
+    private function loadTool(array $data): array
     {
         return $data;
     }

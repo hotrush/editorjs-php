@@ -19,61 +19,36 @@ class GeneralTest extends TestCase
 
     private $config = '';
 
-    public function setUp()
+    public function setUp(): void
     {
-        $this->config = file_get_contents(GeneralTest::CONFIGURATION_FILE);
+        $this->config = json_decode(file_get_contents(GeneralTest::CONFIGURATION_FILE), true);
     }
 
     public function testValidData()
     {
-        new EditorJS(GeneralTest::SAMPLE_VALID_DATA, $this->config);
-    }
-
-    public function testNullInput()
-    {
-        $callable = function () {
-            new EditorJS('', $this->config);
-        };
-
-        $this->assertException($callable, EditorJSException::class, null, 'JSON is empty');
+        new EditorJS(json_decode(GeneralTest::SAMPLE_VALID_DATA, true), $this->config);
+        $this->assertTrue(true);
     }
 
     public function testEmptyArray()
     {
         $callable = function () {
-            new EditorJS('{}', $this->config);
+            new EditorJS([], $this->config);
         };
 
         $this->assertException($callable, EditorJSException::class, null, 'Input array is empty');
     }
 
-    public function testWrongJson()
-    {
-        $callable = function () {
-            new EditorJS('{[{', $this->config);
-        };
-
-        $this->assertException($callable, EditorJSException::class, null, 'Wrong JSON format: Syntax error');
-    }
-
     public function testValidConfig()
     {
-        new ConfigLoader(file_get_contents(TESTS_DIR . "/samples/test-config.json"));
+        new ConfigLoader(json_decode(file_get_contents(TESTS_DIR . "/samples/test-config.json"), true));
+        $this->assertTrue(true);
     }
 
     public function testItemsMissed()
     {
         $callable = function () {
-            new EditorJS('{"s":""}', $this->config);
-        };
-
-        $this->assertException($callable, EditorJSException::class, null, 'Field `blocks` is missing');
-    }
-
-    public function testUnicode()
-    {
-        $callable = function () {
-            new EditorJS('{"s":"😀"}', $this->config);
+            new EditorJS(['foo' => 'bar'], $this->config);
         };
 
         $this->assertException($callable, EditorJSException::class, null, 'Field `blocks` is missing');
@@ -82,7 +57,7 @@ class GeneralTest extends TestCase
     public function testInvalidBlock()
     {
         $callable = function () {
-            new EditorJS('{"blocks":""}', $this->config);
+            new EditorJS(['blocks' => 'foo'], $this->config);
         };
 
         $this->assertException($callable, EditorJSException::class, null, 'Blocks is not an array');
@@ -91,7 +66,7 @@ class GeneralTest extends TestCase
     public function testBlocksContent()
     {
         $callable = function () {
-            new EditorJS('{"blocks":["",""]}', $this->config);
+            new EditorJS(['blocks' => ['', '']], $this->config);
         };
 
         $this->assertException($callable, EditorJSException::class, null, 'Block must be an Array');
@@ -99,7 +74,7 @@ class GeneralTest extends TestCase
 
     public function testNested()
     {
-        $data = '{"blocks":[{"type":"table","data":{"header": {"description":"a table", "author": "codex"}, "rows": [["name", "age", "sex"],["Paul", "24", "male"],["Ann", "26", "female"]]}}]}';
+        $data = json_decode('{"blocks":[{"type":"table","data":{"header": {"description":"a table", "author": "codex"}, "rows": [["name", "age", "sex"],["Paul", "24", "male"],["Ann", "26", "female"]]}}]}', true);
         $editor = new EditorJS($data, $this->config);
         $result = $editor->getBlocks();
 

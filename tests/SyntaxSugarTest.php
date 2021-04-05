@@ -20,14 +20,14 @@ class SyntaxSugarTest extends TestCase
     /**
      * Setup configuration
      */
-    public function setUp()
+    public function setUp(): void
     {
-        $this->configuration = file_get_contents(SyntaxSugarTest::CONFIGURATION_FILE);
+        $this->configuration = json_decode(file_get_contents(SyntaxSugarTest::CONFIGURATION_FILE), true);
     }
 
     public function testShortTypeField()
     {
-        $data = '{"blocks":[{"type":"header","data":{"text":"CodeX <b>Editor</b>", "level": 2}}]}';
+        $data = json_decode('{"blocks":[{"type":"header","data":{"text":"CodeX <b>Editor</b>", "level": 2}}]}', true);
 
         $editor = new EditorJS($data, $this->configuration);
         $result = $editor->getBlocks();
@@ -39,8 +39,10 @@ class SyntaxSugarTest extends TestCase
     public function testShortTypeFieldCanBeOnly()
     {
         $callable = function () {
-            new EditorJS('{"blocks":[{"type":"header","data":{"text":"CodeX <b>Editor</b>", "level": 5}}]}',
-                $this->configuration);
+            new EditorJS(
+                json_decode('{"blocks":[{"type":"header","data":{"text":"CodeX <b>Editor</b>", "level": 5}}]}', true),
+                $this->configuration
+            );
         };
 
         $this->assertException($callable, EditorJSException::class, null, 'Option \'level\' with value `5` has invalid value. Check canBeOnly param.');
@@ -48,13 +50,14 @@ class SyntaxSugarTest extends TestCase
 
     public function testShortIntValid()
     {
-        new EditorJS('{"blocks":[{"type":"subtitle","data":{"text": "string", "level": 1337}}]}', $this->configuration);
+        new EditorJS(json_decode('{"blocks":[{"type":"subtitle","data":{"text": "string", "level": 1337}}]}', true), $this->configuration);
+        $this->assertTrue(true);
     }
 
     public function testShortIntNotValid()
     {
         $callable = function () {
-            new EditorJS('{"blocks":[{"type":"subtitle","data":{"text": "test", "level": "string"}}]}', $this->configuration);
+            new EditorJS(json_decode('{"blocks":[{"type":"subtitle","data":{"text": "test", "level": "string"}}]}', true), $this->configuration);
         };
 
         $this->assertException($callable, EditorJSException::class, null, 'Option \'level\' with value `string` must be integer');
@@ -63,8 +66,8 @@ class SyntaxSugarTest extends TestCase
     public function testInvalidType()
     {
         $callable = function () {
-            $invalid_configuration = '{"tools": {"header": {"title": "invalid_type"}}}';
-            new EditorJS('{"blocks":[{"type":"header","data":{"title": "test"}}]}', $invalid_configuration);
+            $invalid_configuration = json_decode('{"tools": {"header": {"title": "invalid_type"}}}', true);
+            new EditorJS(json_decode('{"blocks":[{"type":"header","data":{"title": "test"}}]}', true), $invalid_configuration);
         };
 
         $this->assertException($callable, EditorJSException::class, null, 'Unhandled type `invalid_type`');
@@ -72,7 +75,7 @@ class SyntaxSugarTest extends TestCase
 
     public function testMixedStructure()
     {
-        $data = '{"time":1539180803359,"blocks":[{"type":"header","data":{"text":"<b>t</b><i>e</i><u>st</u>","level":2}}, {"type":"quote","data":{"text":"<b>t</b><i>e</i><u>st</u>","caption":"", "alignment":"left"}}]}';
+        $data = json_decode('{"time":1539180803359,"blocks":[{"type":"header","data":{"text":"<b>t</b><i>e</i><u>st</u>","level":2}}, {"type":"quote","data":{"text":"<b>t</b><i>e</i><u>st</u>","caption":"", "alignment":"left"}}]}', true);
         $editor = new EditorJS($data, $this->configuration);
         $result = $editor->getBlocks();
 

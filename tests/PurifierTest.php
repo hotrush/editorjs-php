@@ -19,14 +19,14 @@ class PurifierTest extends TestCase
     /**
      * Setup configuration
      */
-    public function setUp()
+    public function setUp(): void
     {
-        $this->configuration = file_get_contents(PurifierTest::CONFIGURATION_FILE);
+        $this->configuration = json_decode(file_get_contents(PurifierTest::CONFIGURATION_FILE), true);
     }
 
     public function testHtmlPurifier()
     {
-        $data = '{"time":1539180803359,"blocks":[{"type":"header","data":{"text":"<b>t</b><i>e</i><u>st</u>","level":2}}, {"type":"quote","data":{"text":"<b>t</b><i>e</i><u>st</u>","caption":"", "alignment":"left"}}]}';
+        $data = json_decode('{"time":1539180803359,"blocks":[{"type":"header","data":{"text":"<b>t</b><i>e</i><u>st</u>","level":2}}, {"type":"quote","data":{"text":"<b>t</b><i>e</i><u>st</u>","caption":"", "alignment":"left"}}]}', true);
         $editor = new EditorJS($data, $this->configuration);
         $result = $editor->getBlocks();
 
@@ -37,7 +37,7 @@ class PurifierTest extends TestCase
 
     public function testCustomTagPurifier()
     {
-        $data = '{"time":1539180803359,"blocks":[{"type":"header","data":{"text":"<b>t</b><mark>e</mark><u>st</u>","level":2}}]}';
+        $data = json_decode('{"time":1539180803359,"blocks":[{"type":"header","data":{"text":"<b>t</b><mark>e</mark><u>st</u>","level":2}}]}', true);
         $editor = new EditorJS($data, $this->configuration);
         $result = $editor->getBlocks();
 
@@ -46,7 +46,7 @@ class PurifierTest extends TestCase
 
     public function testAllTagsPurifier()
     {
-        $data = '{"time":1539180803359,"blocks":[{"type":"raw","data":{"html": "<div style=\"background: #000; color: #fff; font-size: 30px; padding: 50px;\">Any HTML code</div>"}}]}';
+        $data = json_decode('{"time":1539180803359,"blocks":[{"type":"raw","data":{"html": "<div style=\"background: #000; color: #fff; font-size: 30px; padding: 50px;\">Any HTML code</div>"}}]}', true);
         $editor = new EditorJS($data, $this->configuration);
         $result = $editor->getBlocks();
 

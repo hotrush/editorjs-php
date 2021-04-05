@@ -21,19 +21,20 @@ class BlockHandlerTest extends TestCase
     /**
      * Setup configuration
      */
-    public function setUp()
+    public function setUp(): void
     {
-        $this->configuration = file_get_contents(BlockHandlerTest::CONFIGURATION_FILE);
+        $this->configuration = json_decode(file_get_contents(BlockHandlerTest::CONFIGURATION_FILE), true);
     }
 
     public function testLoad()
     {
-        new EditorJS(BlockHandlerTest::SAMPLE_VALID_DATA, $this->configuration);
+        new EditorJS(json_decode(BlockHandlerTest::SAMPLE_VALID_DATA, true), $this->configuration);
+        $this->assertTrue(true);
     }
 
     public function testSanitizing()
     {
-        $data = '{"blocks":[{"type":"header","data":{"text":"CodeX <b>Editor</b>", "level": 2}}]}';
+        $data = json_decode('{"blocks":[{"type":"header","data":{"text":"CodeX <b>Editor</b>", "level": 2}}]}', true);
 
         $editor = new EditorJS($data, $this->configuration);
         $result = $editor->getBlocks();
@@ -43,7 +44,7 @@ class BlockHandlerTest extends TestCase
 
     public function testSanitizingAllowedTags()
     {
-        $data = '{"blocks":[{"type":"paragraph","data":{"text":"<a>CodeX</a> <b>Editor</b> <a href=\"https://ifmo.su\">ifmo.su</a>"}}]}';
+        $data = json_decode('{"blocks":[{"type":"paragraph","data":{"text":"<a>CodeX</a> <b>Editor</b> <a href=\"https://ifmo.su\">ifmo.su</a>"}}]}', true);
 
         $editor = new EditorJS($data, $this->configuration);
         $result = $editor->getBlocks();
@@ -54,7 +55,7 @@ class BlockHandlerTest extends TestCase
     public function testCanBeOnly()
     {
         $callable = function () {
-            new EditorJS('{"blocks":[{"type":"header","data":{"text":"test","level":5}}]}', $this->configuration);
+            new EditorJS(json_decode('{"blocks":[{"type":"header","data":{"text":"test","level":5}}]}', true), $this->configuration);
         };
 
         $this->assertException($callable, EditorJSException::class, null, 'Option \'level\' with value `5` has invalid value. Check canBeOnly param.');
@@ -62,7 +63,7 @@ class BlockHandlerTest extends TestCase
 
     public function testListTool()
     {
-        $data = '{"time":1539180803359,"blocks":[{"type":"list","data":{"style":"ordered","items":["first","second","third"]}}],"version":"2.1.1"}';
+        $data = json_decode('{"time":1539180803359,"blocks":[{"type":"list","data":{"style":"ordered","items":["first","second","third"]}}],"version":"2.1.1"}', true);
         $editor = new EditorJS($data, $this->configuration);
         $result = $editor->getBlocks();
 

@@ -2,6 +2,9 @@
 
 namespace EditorJS;
 
+use HTMLPurifier;
+use HTMLPurifier_Config;
+
 /**
  * Class BlockHandler
  *
@@ -14,19 +17,16 @@ class BlockHandler
      */
     const DEFAULT_ARRAY_KEY = "-";
 
-    /**
-     * @var ConfigLoader|null
-     */
-    private $rules = null;
+    private ConfigLoader $rules;
 
     /**
      * BlockHandler constructor
      *
-     * @param string $configuration
+     * @param array $configuration
      *
      * @throws EditorJSException
      */
-    public function __construct($configuration)
+    public function __construct(array $configuration)
     {
         $this->rules = new ConfigLoader($configuration);
     }
@@ -41,7 +41,7 @@ class BlockHandler
      *
      * @return bool
      */
-    public function validateBlock($blockType, $blockData)
+    public function validateBlock(string $blockType, array $blockData): bool
     {
         /**
          * Default action for blocks that are not mentioned in a configuration
@@ -60,18 +60,20 @@ class BlockHandler
      *
      * @param string $blockType
      * @param array  $blockData
+     * @param array  $tunes
      *
      * @throws EditorJSException
      *
      * @return array|bool
      */
-    public function sanitizeBlock($blockType, $blockData)
+    public function sanitizeBlock(string $blockType, array $blockData, array $tunes = []): array
     {
         $rule = $this->rules->tools[$blockType];
 
         return [
             'type' => $blockType,
-            'data' => $this->sanitize($rule, $blockData)
+            'data' => $this->sanitize($rule, $blockData),
+            'tunes' => $tunes,
         ];
     }
 
@@ -85,7 +87,7 @@ class BlockHandler
      *
      * @return bool
      */
-    private function validate($rules, $blockData)
+    private function validate(array $rules, array $blockData): bool
     {
         /**
          * Make sure that every required param exists in data block
@@ -129,7 +131,9 @@ class BlockHandler
              */
             if (isset($rule['canBeOnly'])) {
                 if (!in_array($value, $rule['canBeOnly'])) {
-                    throw new EditorJSException("Option '$key' with value `$value` has invalid value. Check canBeOnly param.");
+                    throw new EditorJSException(
+                        "Option '$key' with value `$value` has invalid value. Check canBeOnly param."
+                    );
                 }
 
                 // Do not perform additional elements validation in any case
@@ -190,7 +194,7 @@ class BlockHandler
      *
      * @return array
      */
-    private function sanitize($rules, $blockData)
+    private function sanitize(array $rules, array $blockData): array
     {
         /**
          * Sanitize every key in data block
@@ -234,9 +238,9 @@ class BlockHandler
      *
      * @param $allowedTags
      *
-     * @return \HTMLPurifier
+     * @return HTMLPurifier
      */
-    private function getPurifier($allowedTags)
+    private function getPurifier($allowedTags): HTMLPurifier
     {
         $sanitizer = $this->getDefaultPurifier();
 
@@ -249,17 +253,15 @@ class BlockHandler
             $def->addElement('mark', 'Inline', 'Inline', 'Common');
         }
 
-        $purifier = new \HTMLPurifier($sanitizer);
-
-        return $purifier;
+        return new HTMLPurifier($sanitizer);
     }
 
     /**
      * Initialize HTML Purifier with default settings
      */
-    private function getDefaultPurifier()
+    private function getDefaultPurifier(): HTMLPurifier_Config
     {
-        $sanitizer = \HTMLPurifier_Config::createDefault();
+        $sanitizer = HTMLPurifier_Config::createDefault();
 
         $sanitizer->set('HTML.TargetBlank', true);
         $sanitizer->set('URI.AllowedSchemes', ['http' => true, 'https' => true, 'mailto' => true, 'tel' => true]);
@@ -283,7 +285,7 @@ class BlockHandler
      *
      * @return bool – true if the array is associative
      */
-    private function isAssoc(array $arr)
+    private function isAssoc(array $arr): bool
     {
         if ([] === $arr) {
             return false;
@@ -295,13 +297,13 @@ class BlockHandler
     /**
      * Expand shortified tool settings
      *
-     * @param $rule – tool settings
+     * @param mixed $rule – tool settings
      *
      * @throws EditorJSException
      *
      * @return array – expanded tool settings
      */
-    private function expandToolSettings($rule)
+    private function expandToolSettings($rule): array
     {
         if (is_string($rule)) {
             // 'blockName': 'string' – tool with string type and default settings
